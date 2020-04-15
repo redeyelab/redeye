@@ -1,24 +1,29 @@
 /*
-
-RedEye the smart camera software.
-
-- MQTT Play and Pause Video
-
-- GET		/pi/health
-- GET		/api/config
-- POST|PUT	/api/config/?key=val&key=val
-
+RedEye the Smart Camera Package.
 */
-package main
+package redeye
 
-// CameraStatus is passed along in the REST call
-type CameraStatus struct {
-	Name         string
-	Addr         string
-	Status       string
-	PipelineName string
+// Blob is either a JPEG image as an array of bytes
+// or a *gocv.Mat, we wrap this structure such that modules
+// can be built without relying on building GOCV.
+type VideoFrame interface {
+	Bytes() []bytes
+	Blob() interface{}
 }
 
-type Pipelines struct {
-	Name []string
+// VideoSource Play channel delivers either []byte or *gocv.Mat
+type VideoSource interface {
+	Name() string
+	Play(stop chan interface{}) chan *Blob
 }
+
+// VidePlayer provides an MJPEG video stream over a specific
+// IP address and port.
+type VideoPlayer interface {
+	Name() string
+	PlayVideo(VideoSource)
+}
+
+// VideoPipe accepts an JPEG image converts it to
+// type VideoReader interface {
+// }

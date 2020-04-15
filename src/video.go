@@ -180,7 +180,6 @@ func (vid *VideoPlayer) PumpVideo() (frames <-chan *gocv.Mat) {
 		}
 		defer cam.Close()
 
-
 		log.Info().Msg("Camera streaming  ...")
 
 		// Only a single static image will be in the system at a given time.
