@@ -1,7 +1,6 @@
 package http
 
 import (
-	"fmt"
 	"net/http/httptest"
 	"testing"
 )
@@ -14,9 +13,12 @@ func TestServer(t *testing.T) {
 		t.Error("Failed to get a new router")
 	}
 
-	req := httptest.NewRequest("GET", "http://foo.com/bar", nil)
+	req := httptest.NewRequest("GET", "/api/camera/play", nil)
 	w := httptest.NewRecorder()
 
+	// At least run the play handle
 	PlayHandler(w, req, nil)
-	fmt.Printf("%+v\n", w)
+	if w.Code != 200 {
+		t.Errorf("PlayHandler returned an error expected (200) go (%d)", w.Code)
+	}
 }

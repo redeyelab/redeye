@@ -1,6 +1,7 @@
 package http
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -12,18 +13,11 @@ type Server struct {
 	*httprouter.Router
 }
 
-func Index(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	fmt.Fprintf(w, "Welcome!\n")
-}
-
-func Health(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	fmt.Fprintf(w, "hello, %s!\n", ps.ByName("name"))
-}
-
 // GetServer gets the server
 func NewRouter() *Server {
 	router := httprouter.New()
 
+	// This should take care of any CORS problems
 	router.GlobalOPTIONS = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Header.Get("Access-Control-Request-Method") != "" {
 			// Set CORS headers
@@ -36,11 +30,12 @@ func NewRouter() *Server {
 		w.WriteHeader(http.StatusNoContent)
 	})
 
-	router.GET("/", Index)
-	router.GET("/health/:param", Health)
 	server := &Server{
 		Router: router,
 	}
+	server.AddHandler("/", Index)
+	router.GET("/", Index)
+	router.GET("/health/:param", Health)
 	return server
 }
 
@@ -53,9 +48,25 @@ func (srv *Server) StartServer(stop chan interface{}) {
 	<-stop
 }
 
-// AddHandler
+// AddHandler allows new handlers to be added
 func (srv *Server) AddHandler(path string, f httprouter.Handle) {
 	srv.Router.GET(path, f)
+}
+
+// Quick health check
+func Health(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	// Create a quick temporary variable for now
+	resp := map[string]bool{
+		"ok": true,
+	}
+	if ps == nil || len(ps) == 0 {
+		// Add something specic according to the parameter
+	}
+	json.NewEncoder(w).Encode(resp)
+}
+
+func Index(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	fmt.Fprintf(w, "Welcome!\n")
 }
 
 func PlayHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
